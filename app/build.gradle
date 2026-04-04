@@ -110,8 +110,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
 
     // Glide (imágenes)
-    implementation 'com.github.bumptech.glide:glide:4.16.0'
-    kapt 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation 'com.github.bumptech.glide:glide:5.0.5'
+    kapt 'com.github.bumptech.glide:compiler:5.0.5'
 
     // Charts (Dashboard)
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
