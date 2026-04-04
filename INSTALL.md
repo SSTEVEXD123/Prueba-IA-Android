@@ -21,6 +21,27 @@ cd JarvisApp
 
 ---
 
+## PASO 1.5 — Generar Gradle Wrapper (si tu plataforma no acepta binarios en PR)
+
+Este repositorio **no versiona** `gradle/wrapper/gradle-wrapper.jar` para evitar bloqueos en plataformas que rechazan archivos binarios en Pull Requests.
+
+Desde la raíz del proyecto ejecuta:
+
+```bash
+gradle wrapper --gradle-version 8.2 --distribution-type bin
+chmod +x gradlew
+```
+
+Esto generará/recreará automáticamente:
+- `gradlew`
+- `gradlew.bat`
+- `gradle/wrapper/gradle-wrapper.jar`
+- `gradle/wrapper/gradle-wrapper.properties`
+
+> Requisito: tener `gradle` instalado globalmente solo para esta primera generación. Después podrás usar `./gradlew` normalmente.
+
+---
+
 ## PASO 2 — Instalar el NDK en Android Studio
 
 1. Abre **Android Studio**

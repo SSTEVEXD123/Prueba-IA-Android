@@ -44,3 +44,6 @@ tmp/
 temp/
 *.tmp
 *.bak
+
+# Gradle wrapper binary (se genera localmente)
+gradle/wrapper/gradle-wrapper.jar
