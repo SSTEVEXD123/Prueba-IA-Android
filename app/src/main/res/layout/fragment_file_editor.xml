@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_primary"
+    android:orientation="vertical">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarEditor"
+        android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+        android:background="@color/bg_surface"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="@color/text_primary">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center_vertical" android:orientation="horizontal"
+            android:paddingEnd="8dp">
+
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView android:id="@+id/textViewFileName" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:textColor="@color/text_primary"
+                    android:textSize="15sp" android:textStyle="bold" android:text="archivo.txt" />
+                <TextView android:id="@+id/textViewStats" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:textColor="@color/text_hint"
+                    android:textSize="10sp" android:text="0 líneas · 0 palabras" />
+            </LinearLayout>
+
+            <TextView android:id="@+id/textViewSaveStatus" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:textColor="@color/color_success"
+                android:textSize="11sp" android:text="Guardado ✓" android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSave"
+                android:layout_width="wrap_content" android:layout_height="36dp"
+                android:paddingHorizontal="14dp" android:text="Guardar" android:textSize="13sp"
+                app:backgroundTint="@color/accent_primary" app:cornerRadius="8dp" />
+        </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Toolbar de formato Markdown -->
+    <HorizontalScrollView android:layout_width="match_parent" android:layout_height="42dp"
+        android:background="@color/bg_surface" android:scrollbars="none">
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="match_parent"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingHorizontal="8dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonBold" style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="40dp" android:layout_height="36dp"
+                android:text="B" android:textStyle="bold" android:textColor="@color/text_primary" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonItalic" style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="40dp" android:layout_height="36dp"
+                android:text="I" android:textStyle="italic" android:textColor="@color/text_secondary" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonH1" style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="48dp" android:layout_height="36dp"
+                android:text="H1" android:textColor="@color/text_primary" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonH2" style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="48dp" android:layout_height="36dp"
+                android:text="H2" android:textColor="@color/text_secondary" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonList" style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="40dp" android:layout_height="36dp"
+                android:text="• " android:textColor="@color/text_primary" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonCode" style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="52dp" android:layout_height="36dp"
+                android:text="&lt;/&gt;" android:textColor="@color/accent_primary" android:textSize="11sp" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Área de edición -->
+    <EditText
+        android:id="@+id/editTextFileContent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/bg_primary"
+        android:inputType="textMultiLine|textCapSentences"
+        android:gravity="top|start"
+        android:padding="16dp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_hint"
+        android:textSize="15sp"
+        android:fontFamily="monospace"
+        android:lineSpacingMultiplier="1.5"
+        android:hint="Escribe aquí…"
+        android:scrollbars="vertical" />
+
+</LinearLayout>

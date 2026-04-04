@@ -1,0 +1,170 @@
+name: 🌙 Jarvis — Build Nocturno
+
+# Corre cada noche a las 2:00 AM UTC
+# También recalienta el caché de llama.cpp para que
+# los PRs del día siguiente lo encuentren listo
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 02:00 UTC todos los días
+  workflow_dispatch:       # Lanzable manualmente
+
+permissions:
+  contents: read
+  actions: write
+
+env:
+  JAVA_VERSION: '17'
+  NDK_VERSION: '25.2.9519653'
+  CMAKE_VERSION: '3.22.1'
+  GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false'
+
+jobs:
+
+  # ─────────────────────────────────────────────
+  # Calentar caché de llama.cpp (pull --depth=1)
+  # para que los workflows de PR sean rápidos
+  # ─────────────────────────────────────────────
+  warm-cache:
+    name: 🔥 Calentar caché llama.cpp
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🦙 Comprobar caché llama.cpp
+        id: cache-llama
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/llama.cpp
+          key: llamacpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 🎨 Comprobar caché stable-diffusion.cpp
+        id: cache-sd
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/stable-diffusion.cpp
+          key: sdcpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 📦 Actualizar llama.cpp si caché caducó
+        if: steps.cache-llama.outputs.cache-hit != 'true'
+        run: |
+          chmod +x scripts/setup_llama_cpp.sh
+          bash scripts/setup_llama_cpp.sh
+          echo "✅ llama.cpp actualizado y guardado en caché"
+
+      - name: 📊 Info de llama.cpp
+        run: |
+          if [ -d "app/src/main/cpp/llama.cpp" ]; then
+            echo "Commit de llama.cpp:"
+            git -C app/src/main/cpp/llama.cpp log --oneline -3
+            echo "Tamaño:"
+            du -sh app/src/main/cpp/llama.cpp
+          fi
+
+  # ─────────────────────────────────────────────
+  # Build nocturno completo (debug + release sin firma)
+  # ─────────────────────────────────────────────
+  nightly-build:
+    name: 🌙 Build Nocturno Completo
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs: warm-cache
+
+    steps:
+      - name: 📥 Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: ☕ JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: 📱 Android SDK + NDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🔧 NDK + CMake
+        run: |
+          echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+            "ndk;${{ env.NDK_VERSION }}" \
+            "cmake;${{ env.CMAKE_VERSION }}" --channel=0
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
+
+      - name: 🦙 Restaurar llama.cpp
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/llama.cpp
+          key: llamacpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 🎨 Restaurar stable-diffusion.cpp
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/stable-diffusion.cpp
+          key: sdcpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 📦 Clonar C++ si no están en caché
+        run: |
+          if [ ! -d "app/src/main/cpp/llama.cpp" ]; then
+            chmod +x scripts/setup_llama_cpp.sh && bash scripts/setup_llama_cpp.sh
+          fi
+
+      - name: 🗃️ Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-nightly-${{ github.run_id }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: 🔑 Permisos gradlew
+        run: chmod +x gradlew
+
+      - name: 🧹 Clean build
+        run: ./gradlew clean
+
+      - name: 🔍 Lint completo
+        run: ./gradlew lintDebug lintRelease
+
+      - name: 🧪 Tests
+        run: ./gradlew testDebugUnitTest testReleaseUnitTest
+
+      - name: 🔨 Build Debug
+        run: ./gradlew assembleDebug
+
+      - name: 🚀 Build Release (sin firma)
+        run: ./gradlew assembleRelease
+
+      - name: 📦 Renombrar APKs con fecha
+        run: |
+          DATE=$(date +%Y%m%d)
+          mkdir -p nightly_apks
+          find app/build/outputs/apk -name "*.apk" | while read APK; do
+            VARIANT=$(basename "$APK" .apk)
+            cp "$APK" "nightly_apks/jarvis-${DATE}-${VARIANT}.apk"
+          done
+          ls -lh nightly_apks/
+
+      - name: 📤 Subir APKs nocturnos
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-${{ github.run_number }}-${{ github.sha }}
+          path: nightly_apks/
+          retention-days: 14
+
+      - name: 📊 Resumen nocturno
+        run: |
+          echo "## 🌙 Nightly Build — $(date '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| APK | Tamaño |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          for f in nightly_apks/*.apk; do
+            SIZE=$(du -sh "$f" | cut -f1)
+            NAME=$(basename "$f")
+            echo "| $NAME | $SIZE |" >> $GITHUB_STEP_SUMMARY
+          done

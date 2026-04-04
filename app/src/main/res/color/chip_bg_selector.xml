@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- chip_bg_selector.xml — fondo de chips de estado de modelos -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="#1A2ECC71" android:state_checked="true" />
+    <item android:color="#1A252535" />
+</selector>

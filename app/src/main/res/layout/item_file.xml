@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardBackgroundColor="@color/bg_surface"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="1dp">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:padding="14dp">
+
+        <!-- Ícono tipo -->
+        <TextView android:id="@+id/textViewFileType"
+            android:layout_width="36dp" android:layout_height="36dp"
+            android:gravity="center" android:textSize="20sp"
+            android:layout_marginEnd="12dp"
+            tools:text="📝" />
+
+        <!-- Info -->
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1"
+            android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:id="@+id/textViewFileName"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/text_primary" android:textSize="14sp"
+                android:textStyle="bold" android:maxLines="1" android:ellipsize="end"
+                tools:text="mis_notas.txt" />
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginTop="2dp">
+                <TextView android:id="@+id/textViewFileSize"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:textColor="@color/text_hint" android:textSize="11sp"
+                    android:layout_marginEnd="8dp" tools:text="4.2 KB" />
+                <TextView android:id="@+id/textViewFileDate"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:textColor="@color/text_hint" android:textSize="11sp"
+                    tools:text="03/04/2026 14:30" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Acciones -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonShareFile"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="36dp" android:layout_height="36dp"
+            android:insetTop="0dp" android:insetBottom="0dp" android:padding="0dp"
+            app:icon="@drawable/ic_share" app:iconTint="@color/text_hint" app:iconSize="18dp"
+            android:contentDescription="Compartir" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonDeleteFile"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="36dp" android:layout_height="36dp"
+            android:insetTop="0dp" android:insetBottom="0dp" android:padding="0dp"
+            app:icon="@drawable/ic_delete" app:iconTint="@color/color_error" app:iconSize="18dp"
+            android:contentDescription="Eliminar" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

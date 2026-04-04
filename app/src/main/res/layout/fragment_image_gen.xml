@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_primary">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎨 Generar Imagen"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stable Diffusion local en tu dispositivo"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Aviso estado SD -->
+        <TextView
+            android:id="@+id/textViewSdStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/badge_bg"
+            android:padding="12dp"
+            android:textColor="@color/color_warning"
+            android:textSize="13sp"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone"
+            tools:text="⚠️ Modelo SD no cargado."
+            tools:visibility="visible" />
+
+        <!-- Prompt principal -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="@color/bg_surface"
+            app:cardCornerRadius="16dp">
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp">
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Prompt" android:textColor="@color/text_primary"
+                    android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="8dp" />
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextPrompt"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:background="@color/bg_input" android:inputType="textMultiLine"
+                    android:minLines="3" android:maxLines="6"
+                    android:hint="Describe la imagen que quieres generar…"
+                    android:textColor="@color/text_primary" android:textColorHint="@color/text_hint"
+                    android:padding="12dp" android:textSize="14sp" />
+
+                <!-- Sugerencias rápidas -->
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupSuggestions"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Prompt negativo -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="@color/bg_surface" app:cardCornerRadius="16dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Prompt negativo" android:textColor="@color/text_secondary"
+                    android:textSize="13sp" android:textStyle="bold" android:layout_marginBottom="8dp" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextNegPrompt"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:background="@color/bg_input" android:minLines="2"
+                    android:hint="Lo que NO quieres en la imagen…"
+                    android:textColor="@color/text_primary" android:textColorHint="@color/text_hint"
+                    android:padding="12dp" android:textSize="13sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Controles: Steps y CFG -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/bg_surface" app:cardCornerRadius="16dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="16dp">
+
+                <!-- Steps -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+                    <TextView android:layout_width="0dp" android:layout_weight="1"
+                        android:layout_height="wrap_content" android:text="Pasos de difusión"
+                        android:textColor="@color/text_secondary" android:textSize="13sp" />
+                    <TextView android:id="@+id/textViewStepsValue" android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:textColor="@color/accent_primary"
+                        android:textSize="15sp" android:textStyle="bold" tools:text="20" />
+                </LinearLayout>
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/sliderSteps" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_marginBottom="12dp"
+                    app:thumbColor="@color/accent_primary" app:trackColorActive="@color/accent_primary"
+                    app:trackColorInactive="@color/bg_input" />
+
+                <!-- CFG Scale -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+                    <TextView android:layout_width="0dp" android:layout_weight="1"
+                        android:layout_height="wrap_content" android:text="CFG Scale"
+                        android:textColor="@color/text_secondary" android:textSize="13sp" />
+                    <TextView android:id="@+id/textViewCfgValue" android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:textColor="@color/accent_primary"
+                        android:textSize="15sp" android:textStyle="bold" tools:text="7.0" />
+                </LinearLayout>
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/sliderCfg" android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:thumbColor="@color/accent_primary" app:trackColorActive="@color/accent_primary"
+                    app:trackColorInactive="@color/bg_input" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Botón Generar -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonGenerate"
+            android:layout_width="match_parent" android:layout_height="52dp"
+            android:text="✨ Generar imagen"
+            android:textSize="16sp" android:textStyle="bold"
+            app:backgroundTint="@color/accent_primary"
+            app:cornerRadius="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonClearPrompt"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent" android:layout_height="44dp"
+            android:text="Limpiar campos" android:textSize="14sp"
+            app:strokeColor="@color/text_hint" android:textColor="@color/text_hint"
+            app:cornerRadius="16dp" android:layout_marginBottom="16dp" />
+
+        <!-- Indicador de generación -->
+        <LinearLayout android:id="@+id/layoutProgress" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:gravity="center"
+            android:orientation="vertical" android:layout_marginBottom="16dp">
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/progressGenerating" android:layout_width="48dp"
+                android:layout_height="48dp" android:visibility="gone"
+                app:indicatorColor="@color/accent_primary" app:trackColor="@color/bg_surface"
+                tools:visibility="visible" />
+            <TextView android:id="@+id/textViewGeneratingInfo" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:layout_marginTop="8dp"
+                android:textColor="@color/text_secondary" android:textSize="13sp"
+                android:visibility="gone" tools:text="Generando imagen… (20 pasos)"
+                tools:visibility="visible" />
+        </LinearLayout>
+
+        <!-- Resultado -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardResult" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:visibility="gone"
+            android:layout_marginBottom="24dp"
+            app:cardBackgroundColor="@color/bg_surface" app:cardCornerRadius="16dp"
+            tools:visibility="visible">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="12dp">
+                <ImageView android:id="@+id/imageViewResult" android:layout_width="match_parent"
+                    android:layout_height="300dp" android:scaleType="fitCenter"
+                    android:adjustViewBounds="true" android:layout_marginBottom="12dp"
+                    tools:src="@drawable/ic_models" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonSaveImage" android:layout_width="match_parent"
+                    android:layout_height="44dp" android:text="💾 Guardar imagen"
+                    app:backgroundTint="@color/color_success" app:cornerRadius="12dp"
+                    android:visibility="gone" tools:visibility="visible" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</ScrollView>

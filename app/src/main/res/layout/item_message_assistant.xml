@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- item_message_assistant.xml — Burbuja de Jarvis (izquierda) -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="start"
+    android:orientation="horizontal"
+    android:paddingVertical="4dp">
+
+    <!-- Avatar Jarvis -->
+    <TextView
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/circle_accent"
+        android:gravity="center"
+        android:text="⚡"
+        android:textSize="14sp" />
+
+    <!-- Contenido del mensaje -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="64dp"
+        android:background="@drawable/bubble_assistant"
+        android:orientation="vertical"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="10dp">
+
+        <!-- Indicador de streaming (tres puntos animados) -->
+        <LinearLayout
+            android:id="@+id/layoutStreaming"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:shimmer_auto_start="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Jarvis está pensando..."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:textStyle="italic" />
+            </com.facebook.shimmer.ShimmerFrameLayout>
+        </LinearLayout>
+
+        <!-- Texto del mensaje (Markdown renderizado) -->
+        <TextView
+            android:id="@+id/textViewMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+            android:lineSpacingMultiplier="1.4"
+            tools:text="**Aprender programación Android** requiere dominar Kotlin, los ciclos de vida de Activity/Fragment, y las librerías Jetpack..." />
+
+        <!-- Pie: tiempo de generación + hora + acciones -->
+        <LinearLayout
+            android:id="@+id/layoutActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/textViewGenTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:textColor="@color/text_hint"
+                android:textSize="10sp"
+                tools:text="2.4s"
+                tools:visibility="visible" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/textViewTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_hint"
+                android:textSize="10sp"
+                android:layout_marginEnd="4dp"
+                tools:text="14:33" />
+
+            <!-- Botón copiar -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonCopy"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                app:icon="@drawable/ic_copy"
+                app:iconTint="@color/text_hint"
+                app:iconSize="14dp"
+                android:contentDescription="Copiar respuesta" />
+
+            <!-- Botón regenerar -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonRegenerate"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                app:icon="@drawable/ic_refresh"
+                app:iconTint="@color/text_hint"
+                app:iconSize="14dp"
+                android:contentDescription="Regenerar respuesta" />
+
+            <!-- Botón eliminar -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonDelete"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                app:icon="@drawable/ic_delete"
+                app:iconTint="@color/text_hint"
+                app:iconSize="14dp"
+                android:contentDescription="Eliminar mensaje" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/chatFragment">
+
+    <!-- Chat principal -->
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.jarvis.app.ui.chat.ChatFragment"
+        android:label="Chat"
+        tools:layout="@layout/fragment_chat">
+
+        <action
+            android:id="@+id/action_chat_to_image"
+            app:destination="@id/imageGenFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <!-- Dashboard -->
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.jarvis.app.ui.dashboard.DashboardFragment"
+        android:label="Panel"
+        tools:layout="@layout/fragment_dashboard" />
+
+    <!-- Gestión de modelos -->
+    <fragment
+        android:id="@+id/modelsFragment"
+        android:name="com.jarvis.app.ui.models.ModelsFragment"
+        android:label="Modelos"
+        tools:layout="@layout/fragment_models" />
+
+    <!-- Archivos -->
+    <fragment
+        android:id="@+id/filesFragment"
+        android:name="com.jarvis.app.ui.files.FilesFragment"
+        android:label="Archivos"
+        tools:layout="@layout/fragment_files">
+
+        <action
+            android:id="@+id/action_files_to_editor"
+            app:destination="@id/fileEditorFragment" />
+    </fragment>
+
+    <!-- Editor de archivos -->
+    <fragment
+        android:id="@+id/fileEditorFragment"
+        android:name="com.jarvis.app.ui.files.FileEditorFragment"
+        android:label="Editor">
+        <argument
+            android:name="filePath"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="fileName"
+            app:argType="string"
+            android:defaultValue="nuevo_archivo.txt" />
+    </fragment>
+
+    <!-- Generación de imágenes -->
+    <fragment
+        android:id="@+id/imageGenFragment"
+        android:name="com.jarvis.app.ui.image.ImageGenFragment"
+        android:label="Generar Imagen"
+        tools:layout="@layout/fragment_image_gen" />
+
+</navigation>

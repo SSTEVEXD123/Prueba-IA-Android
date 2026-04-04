@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema principal de Jarvis App (oscuro) -->
+    <style name="Theme.JarvisApp" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Colores primarios -->
+        <item name="colorPrimary">@color/accent_primary</item>
+        <item name="colorPrimaryVariant">@color/accent_secondary</item>
+        <item name="colorOnPrimary">@color/text_on_accent</item>
+
+        <!-- Colores secundarios -->
+        <item name="colorSecondary">@color/accent_secondary</item>
+        <item name="colorSecondaryVariant">@color/accent_secondary</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Fondos -->
+        <item name="android:colorBackground">@color/bg_primary</item>
+        <item name="colorSurface">@color/bg_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+
+        <!-- Textos -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_hint</item>
+
+        <!-- Status bar y navigation bar oscuras -->
+        <item name="android:statusBarColor">@color/bg_surface</item>
+        <item name="android:navigationBarColor">@color/bg_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <!-- Ripple -->
+        <item name="colorControlHighlight">@color/accent_primary_10</item>
+
+        <!-- Error -->
+        <item name="colorError">@color/color_error</item>
+
+        <!-- TextInputLayout -->
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.FilledBox</item>
+    </style>
+
+    <!-- Tema para Splash Screen -->
+    <style name="Theme.JarvisApp.SplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/bg_primary</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_jarvis_splash</item>
+        <item name="postSplashScreenTheme">@style/Theme.JarvisApp</item>
+    </style>
+
+    <!-- Estilo para BottomNavigationView -->
+    <style name="Widget.JarvisApp.BottomNavigation" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemTextColor">@color/nav_item_color</item>
+        <item name="itemIconTint">@color/nav_item_color</item>
+        <item name="android:background">@color/bg_surface</item>
+        <item name="elevation">8dp</item>
+    </style>
+
+    <!-- Estilo para MaterialCardView -->
+    <style name="Widget.JarvisApp.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/bg_surface</item>
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">2dp</item>
+    </style>
+</resources>

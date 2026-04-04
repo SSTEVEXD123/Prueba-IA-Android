@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Jarvis App</string>
+
+    <!-- Navegación -->
+    <string name="nav_chat">Chat</string>
+    <string name="nav_dashboard">Panel</string>
+    <string name="nav_models">Modelos</string>
+    <string name="nav_files">Archivos</string>
+
+    <!-- Chat -->
+    <string name="hint_message">Escribe un mensaje…</string>
+    <string name="btn_send">Enviar</string>
+    <string name="btn_stop">Detener</string>
+    <string name="btn_new_chat">Nuevo chat</string>
+    <string name="empty_chat_title">Jarvis</string>
+    <string name="empty_chat_subtitle">Tu asistente personal con IA local.\n¿En qué puedo ayudarte hoy?</string>
+    <string name="model_not_loaded">Sin modelo activo. Ve a Modelos para instalar uno.</string>
+    <string name="generating">Generando respuesta…</string>
+    <string name="copied">Copiado al portapapeles</string>
+
+    <!-- Modelos -->
+    <string name="models_title">Gestión de Modelos</string>
+    <string name="download_model">Descargar</string>
+    <string name="delete_model">Eliminar</string>
+    <string name="activate_model">Activar</string>
+    <string name="model_active">Activo ✓</string>
+    <string name="model_downloading">Descargando…</string>
+    <string name="import_model">Importar modelo (.gguf)</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Panel de Control</string>
+    <string name="ram_label">Memoria RAM</string>
+    <string name="cpu_label">Uso de CPU</string>
+    <string name="storage_label">Almacenamiento</string>
+
+    <!-- Archivos -->
+    <string name="files_title">Archivos</string>
+    <string name="create_file">Nuevo archivo</string>
+    <string name="file_deleted">Archivo eliminado</string>
+
+    <!-- Errores -->
+    <string name="error_model_not_loaded">Error: el modelo no está cargado</string>
+    <string name="error_generation">Error durante la generación</string>
+    <string name="error_download">Error al descargar el modelo</string>
+    <string name="error_file_not_found">Archivo no encontrado</string>
+
+    <!-- Permisos -->
+    <string name="permission_storage">Se necesita acceso al almacenamiento para guardar modelos y archivos</string>
+    <string name="permission_audio">Se necesita acceso al micrófono para el reconocimiento de voz</string>
+</resources>

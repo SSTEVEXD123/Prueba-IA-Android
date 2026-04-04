@@ -1,0 +1,46 @@
+# Android
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.ap_
+*.dex
+
+# Modelos de IA (demasiado grandes para Git)
+*.gguf
+*.bin
+*.pt
+*.safetensors
+app/src/main/cpp/llama.cpp/
+app/src/main/cpp/stable-diffusion.cpp/
+
+# Archivos de usuario generados
+/JarvisApp/
+generated_images/
+generated_pdfs/
+
+# Keystores
+*.jks
+*.keystore
+key.properties
+
+# Logs
+*.log
+logs/
+
+# NDK
+*.so
+*.a
+!app/src/main/jniLibs/**/*.so
+
+# Temporales
+tmp/
+temp/
+*.tmp
+*.bak

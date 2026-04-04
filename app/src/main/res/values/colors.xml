@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ── PALETA JARVIS (Tema oscuro futurista) ── -->
+
+    <!-- Fondos -->
+    <color name="bg_primary">#0D0D12</color>
+    <color name="bg_surface">#16161E</color>
+    <color name="bg_input">#1E1E2A</color>
+    <color name="bg_button_secondary">#252535</color>
+    <color name="bg_card">#1A1A26</color>
+
+    <!-- Acento principal: azul eléctrico -->
+    <color name="accent_primary">#4F8EF7</color>
+    <color name="accent_primary_10">#1A4F8EF7</color>
+    <color name="accent_secondary">#7B5CF7</color>
+    <color name="accent_glow">#2A4F8EF7</color>
+
+    <!-- Textos -->
+    <color name="text_primary">#F0F0F8</color>
+    <color name="text_secondary">#8A8AA8</color>
+    <color name="text_hint">#505068</color>
+    <color name="text_on_accent">#FFFFFF</color>
+
+    <!-- Estados -->
+    <color name="color_success">#2ECC71</color>
+    <color name="color_warning">#F39C12</color>
+    <color name="color_error">#E74C3C</color>
+    <color name="color_info">#3498DB</color>
+
+    <!-- Burbujas de chat -->
+    <color name="bubble_user_bg">#4F8EF7</color>
+    <color name="bubble_assistant_bg">#1E1E2A</color>
+    <color name="bubble_assistant_border">#2A2A3A</color>
+
+    <!-- Navegación -->
+    <color name="nav_active">#4F8EF7</color>
+    <color name="nav_inactive">#505068</color>
+
+    <!-- Launcher icon background (requerido por adaptive-icon) -->
+    <color name="ic_launcher_background">#0D0D12</color>
+
+    <!-- Material design base -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

@@ -1,0 +1,10 @@
+## Este archivo es generado automáticamente por Android Studio.
+## NO lo incluyas en control de versiones (ya está en .gitignore).
+
+# Ruta al SDK de Android — Android Studio la configura automáticamente
+# sdk.dir=/Users/TU_USUARIO/Library/Android/sdk          (macOS)
+# sdk.dir=C\:\\Users\\TU_USUARIO\\AppData\\Local\\Android\\Sdk   (Windows)
+# sdk.dir=/home/TU_USUARIO/Android/Sdk                   (Linux)
+
+# Ruta al NDK (opcional si no está en el SDK por defecto)
+# ndk.dir=/Users/TU_USUARIO/Library/Android/sdk/ndk/26.1.10909125

@@ -1,0 +1,566 @@
+name: 🤖 Jarvis App — CI/CD
+
+# ─────────────────────────────────────────────
+# DISPARADORES
+# ─────────────────────────────────────────────
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'release/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+  # Permite lanzar manualmente desde la pestaña Actions
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Tipo de build'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+      run_tests:
+        description: '¿Ejecutar tests?'
+        required: false
+        default: true
+        type: boolean
+
+# ─────────────────────────────────────────────
+# PERMISOS MÍNIMOS
+# ─────────────────────────────────────────────
+permissions:
+  contents: write      # Para crear releases y subir APKs
+  checks: write        # Para publicar resultados de tests
+  pull-requests: write # Para comentar en PRs con el resumen
+
+# Cancela builds anteriores del mismo branch si llega uno nuevo
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ─────────────────────────────────────────────
+# VARIABLES GLOBALES
+# ─────────────────────────────────────────────
+env:
+  JAVA_VERSION: '17'
+  NDK_VERSION: '25.2.9519653'
+  CMAKE_VERSION: '3.22.1'
+  GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true'
+
+# ═══════════════════════════════════════════════════════════════════
+# JOBS
+# ═══════════════════════════════════════════════════════════════════
+jobs:
+
+  # ─────────────────────────────────────────────
+  # JOB 1 — Lint y análisis estático
+  # ─────────────────────────────────────────────
+  lint:
+    name: 🔍 Lint & Análisis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # Historial completo para análisis incremental
+
+      - name: ☕ Configurar JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: 📱 Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🔧 Instalar NDK y CMake
+        run: |
+          echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+            "ndk;${{ env.NDK_VERSION }}" \
+            "cmake;${{ env.CMAKE_VERSION }}" \
+            --channel=0
+          echo "NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
+
+      - name: 🦙 Cache llama.cpp
+        id: cache-llamacpp
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/llama.cpp
+          key: llamacpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+          restore-keys: llamacpp-
+
+      - name: 🎨 Cache stable-diffusion.cpp
+        id: cache-sdcpp
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/stable-diffusion.cpp
+          key: sdcpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+          restore-keys: sdcpp-
+
+      - name: 📦 Clonar dependencias C++ (llama.cpp + sd.cpp)
+        if: steps.cache-llamacpp.outputs.cache-hit != 'true'
+        run: |
+          chmod +x scripts/setup_llama_cpp.sh
+          bash scripts/setup_llama_cpp.sh
+        env:
+          ANDROID_NDK_HOME: ${{ env.NDK_HOME }}
+
+      - name: 🗃️ Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            .gradle
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: 🔑 Dar permisos a gradlew
+        run: chmod +x gradlew
+
+      - name: 🔍 Ejecutar Lint
+        run: ./gradlew lintDebug --stacktrace
+
+      - name: 📤 Subir reporte de Lint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.html
+          retention-days: 7
+
+      - name: 💬 Comentar Lint en PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'app/build/reports/lint-results-debug.html';
+            if (fs.existsSync(path)) {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '🔍 **Lint completado.** Descarga el reporte completo en los artefactos del workflow.'
+              });
+            }
+
+  # ─────────────────────────────────────────────
+  # JOB 2 — Tests unitarios
+  # ─────────────────────────────────────────────
+  unit-tests:
+    name: 🧪 Tests Unitarios
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: lint
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ☕ JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: 📱 Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🔧 NDK + CMake
+        run: |
+          echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+            "ndk;${{ env.NDK_VERSION }}" \
+            "cmake;${{ env.CMAKE_VERSION }}" --channel=0
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
+
+      - name: 🦙 Restaurar llama.cpp del caché
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/llama.cpp
+          key: llamacpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 🎨 Restaurar stable-diffusion.cpp del caché
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/stable-diffusion.cpp
+          key: sdcpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 📦 Clonar C++ si no están en caché
+        run: |
+          if [ ! -d "app/src/main/cpp/llama.cpp" ]; then
+            chmod +x scripts/setup_llama_cpp.sh && bash scripts/setup_llama_cpp.sh
+          fi
+
+      - name: 🗃️ Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+      - name: 🔑 Permisos gradlew
+        run: chmod +x gradlew
+
+      - name: 🧪 Ejecutar tests unitarios
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: 📊 Publicar resultados de tests
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: 'Unit Test Results'
+          path: 'app/build/test-results/testDebugUnitTest/*.xml'
+          reporter: 'java-junit'
+          fail-on-error: false
+
+      - name: 📤 Subir reporte de coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: app/build/reports/tests/testDebugUnitTest/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # JOB 3 — Build APK Debug
+  # ─────────────────────────────────────────────
+  build-debug:
+    name: 🔨 Build APK Debug
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: unit-tests
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ☕ JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: 📱 Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🔧 NDK + CMake
+        run: |
+          echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+            "ndk;${{ env.NDK_VERSION }}" \
+            "cmake;${{ env.CMAKE_VERSION }}" --channel=0
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
+
+      - name: 🦙 Restaurar llama.cpp del caché
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/llama.cpp
+          key: llamacpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 🎨 Restaurar stable-diffusion.cpp del caché
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/stable-diffusion.cpp
+          key: sdcpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 📦 Clonar C++ si no están en caché
+        run: |
+          if [ ! -d "app/src/main/cpp/llama.cpp" ]; then
+            chmod +x scripts/setup_llama_cpp.sh && bash scripts/setup_llama_cpp.sh
+          fi
+
+      - name: 🗃️ Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            .gradle
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: 🔑 Permisos gradlew
+        run: chmod +x gradlew
+
+      - name: 🔨 Compilar APK Debug
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: 📋 Obtener info del APK
+        id: apk-info
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
+          APK_SIZE=$(du -sh "$APK_PATH" | cut -f1)
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+          echo "apk_size=$APK_SIZE" >> $GITHUB_OUTPUT
+          echo "APK encontrado: $APK_PATH ($APK_SIZE)"
+
+      - name: 📤 Subir APK Debug como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-app-debug-${{ github.sha }}
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      - name: 💬 Comentar APK en PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const apkSize = '${{ steps.apk-info.outputs.apk_size }}';
+            const sha = context.sha.substring(0, 7);
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                '## ✅ Build Debug exitoso',
+                '',
+                '| Campo | Valor |',
+                '|---|---|',
+                `| 📦 Tamaño APK | ${apkSize} |`,
+                `| 🔖 Commit | \`${sha}\` |`,
+                `| 🏗️ Runner | ubuntu-latest |`,
+                '',
+                '> Descarga el APK en la sección **Artifacts** de este workflow.'
+              ].join('\n')
+            });
+
+  # ─────────────────────────────────────────────
+  # JOB 4 — Build APK Release firmado
+  # Solo en push a main o tags v*.*.*
+  # ─────────────────────────────────────────────
+  build-release:
+    name: 🚀 Build APK Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # Solo corre en main o cuando se crea un tag
+    if: >
+      github.ref == 'refs/heads/main' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'release')
+    needs: [lint, unit-tests]
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ☕ JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: 📱 Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🔧 NDK + CMake
+        run: |
+          echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+            "ndk;${{ env.NDK_VERSION }}" \
+            "cmake;${{ env.CMAKE_VERSION }}" --channel=0
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
+
+      - name: 🦙 Restaurar llama.cpp del caché
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/llama.cpp
+          key: llamacpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 🎨 Restaurar stable-diffusion.cpp del caché
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/stable-diffusion.cpp
+          key: sdcpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 📦 Clonar C++ si no están en caché
+        run: |
+          if [ ! -d "app/src/main/cpp/llama.cpp" ]; then
+            chmod +x scripts/setup_llama_cpp.sh && bash scripts/setup_llama_cpp.sh
+          fi
+
+      - name: 🗃️ Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+      - name: 🔑 Permisos gradlew
+        run: chmod +x gradlew
+
+      # Decodifica el keystore desde el Secret de GitHub
+      - name: 🔐 Decodificar Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > app/jarvis_release.keystore
+            echo "KEYSTORE_PRESENT=true" >> $GITHUB_ENV
+          else
+            echo "⚠️  Keystore no configurado — APK no firmado"
+            echo "KEYSTORE_PRESENT=false" >> $GITHUB_ENV
+          fi
+
+      - name: 🏗️ Compilar APK Release
+        env:
+          STORE_FILE: ${{ github.workspace }}/app/jarvis_release.keystore
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ "$KEYSTORE_PRESENT" = "true" ]; then
+            ./gradlew assembleRelease \
+              -Pandroid.injected.signing.store.file="$STORE_FILE" \
+              -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEY_PASSWORD" \
+              --stacktrace
+          else
+            # Build sin firmar (para testear la pipeline sin keystore)
+            ./gradlew assembleRelease --stacktrace
+          fi
+
+      - name: 🗑️ Limpiar keystore del runner
+        if: always()
+        run: rm -f app/jarvis_release.keystore
+
+      - name: 📋 Calcular SHA-256 del APK
+        id: apk-hash
+        run: |
+          APK=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
+          HASH=$(sha256sum "$APK" | cut -d' ' -f1)
+          SIZE=$(du -sh "$APK" | cut -f1)
+          echo "apk_sha256=$HASH" >> $GITHUB_OUTPUT
+          echo "apk_size=$SIZE" >> $GITHUB_OUTPUT
+          echo "apk_path=$APK" >> $GITHUB_OUTPUT
+          echo "SHA-256: $HASH"
+          echo "Size: $SIZE"
+
+      - name: 📤 Subir APK Release
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-app-release-${{ github.sha }}
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 90
+
+  # ─────────────────────────────────────────────
+  # JOB 5 — GitHub Release automático en tags
+  # ─────────────────────────────────────────────
+  github-release:
+    name: 🏷️ GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-release
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📥 Descargar APK Release
+        uses: actions/download-artifact@v4
+        with:
+          name: jarvis-app-release-${{ github.sha }}
+          path: release/
+
+      - name: 📝 Generar changelog automático
+        id: changelog
+        run: |
+          # Obtener el tag anterior
+          PREV_TAG=$(git describe --abbrev=0 --tags HEAD^ 2>/dev/null || echo "")
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+
+          if [ -n "$PREV_TAG" ]; then
+            COMMITS=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges | head -30)
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges | head -30)
+          fi
+
+          # Escribir changelog
+          cat > CHANGELOG_RELEASE.md << MDEOF
+          ## ⚡ Jarvis App ${CURRENT_TAG}
+
+          ### Cambios en esta versión
+          ${COMMITS}
+
+          ### 📦 Instalación
+          1. Descarga \`jarvis-app-release.apk\`
+          2. En tu Android: **Ajustes → Apps → Instalar apps desconocidas → Permitir**
+          3. Instala el APK
+          4. Ve a **Modelos** → descarga el modelo de tu elección
+          5. ¡Conversa con Jarvis completamente offline!
+
+          ### 🤖 Modelos recomendados
+          | Modelo | RAM | Tamaño |
+          |---|---|---|
+          | SmolLM2 360M Q8 | 1 GB | 400 MB |
+          | Phi-3 Mini Q4 | 3 GB | 2.4 GB |
+          | Llama 3.2 3B Q4 | 4 GB | 2.1 GB |
+          MDEOF
+
+          echo "changelog_file=CHANGELOG_RELEASE.md" >> $GITHUB_OUTPUT
+
+      - name: 🚀 Crear GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "⚡ Jarvis App ${{ github.ref_name }}"
+          body_path: CHANGELOG_RELEASE.md
+          files: |
+            release/*.apk
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ─────────────────────────────────────────────
+  # JOB 6 — Resumen de CI en el PR
+  # ─────────────────────────────────────────────
+  ci-summary:
+    name: 📊 Resumen CI
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests, build-debug]
+    if: always() && github.event_name == 'pull_request'
+
+    steps:
+      - name: 📊 Escribir resumen en el Job Summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const lint      = '${{ needs.lint.result }}';
+            const tests     = '${{ needs.unit-tests.result }}';
+            const build     = '${{ needs.build-debug.result }}';
+            const icon = r => r === 'success' ? '✅' : r === 'skipped' ? '⏭️' : '❌';
+
+            const summary = [
+              '## ⚡ Jarvis App — Resumen CI',
+              '',
+              '| Job | Estado |',
+              '|---|---|',
+              `| 🔍 Lint & Análisis | ${icon(lint)} ${lint} |`,
+              `| 🧪 Tests Unitarios | ${icon(tests)} ${tests} |`,
+              `| 🔨 Build APK Debug | ${icon(build)} ${build} |`,
+              '',
+              `> Commit: \`${{ github.event.pull_request.head.sha }}`.substring(0, 7) + '\`',
+              `> Branch: \`${{ github.head_ref }}\``,
+            ].join('\n');
+
+            await core.summary.addRaw(summary).write();

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/chatFragment"
+        android:icon="@drawable/ic_chat"
+        android:title="@string/nav_chat"
+        android:orderInCategory="1" />
+
+    <item
+        android:id="@+id/dashboardFragment"
+        android:icon="@drawable/ic_dashboard"
+        android:title="@string/nav_dashboard"
+        android:orderInCategory="2" />
+
+    <item
+        android:id="@+id/modelsFragment"
+        android:icon="@drawable/ic_models"
+        android:title="@string/nav_models"
+        android:orderInCategory="3" />
+
+    <item
+        android:id="@+id/filesFragment"
+        android:icon="@drawable/ic_folder"
+        android:title="@string/nav_files"
+        android:orderInCategory="4" />
+
+</menu>

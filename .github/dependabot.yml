@@ -1,0 +1,46 @@
+version: 2
+updates:
+
+  # ── Dependencias Gradle (Android) ──
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Madrid"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "android"
+    commit-message:
+      prefix: "⬆️ deps"
+    ignore:
+      # No actualizar itext7 automáticamente (rompe compatibilidad Android)
+      - dependency-name: "com.itextpdf:itext7-core"
+      # No actualizar llama.cpp via Gradle (se gestiona con git clone)
+      - dependency-name: "com.ggerganov:llama"
+    groups:
+      # Agrupar todas las actualizaciones de AndroidX en un solo PR
+      androidx-updates:
+        patterns:
+          - "androidx.*"
+      # Agrupar Material Design juntas
+      material-updates:
+        patterns:
+          - "com.google.android.material*"
+
+  # ── GitHub Actions ──
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Madrid"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "⬆️ actions"

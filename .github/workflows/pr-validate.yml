@@ -1,0 +1,132 @@
+name: ✅ Jarvis — Validación PR
+
+# Solo se dispara en pull_request para dar feedback rápido
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+env:
+  JAVA_VERSION: '17'
+  NDK_VERSION: '25.2.9519653'
+  CMAKE_VERSION: '3.22.1'
+  GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx3g -Dorg.gradle.daemon=false'
+
+jobs:
+
+  # ─────────────────────────────────────────────
+  # Validación rápida: lint + ktlint + tests
+  # Sin compilar el NDK para acelerar el feedback
+  # ─────────────────────────────────────────────
+  validate:
+    name: ✅ Validación rápida
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: 📥 Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: ☕ JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: 📱 Android SDK (sin NDK para velocidad)
+        uses: android-actions/setup-android@v3
+
+      - name: 🔧 Instalar solo NDK (sin compilar C++ aún)
+        run: |
+          echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+            "ndk;${{ env.NDK_VERSION }}" \
+            "cmake;${{ env.CMAKE_VERSION }}" --channel=0
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
+
+      - name: 🦙 Restaurar llama.cpp del caché
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/llama.cpp
+          key: llamacpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 🎨 Restaurar stable-diffusion.cpp del caché
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/cpp/stable-diffusion.cpp
+          key: sdcpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
+
+      - name: 📦 Clonar C++ si no están en caché
+        run: |
+          if [ ! -d "app/src/main/cpp/llama.cpp" ]; then
+            chmod +x scripts/setup_llama_cpp.sh
+            bash scripts/setup_llama_cpp.sh
+          else
+            echo "✅ Usando caché de llama.cpp"
+          fi
+
+      - name: 🗃️ Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            .gradle
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: 🔑 Permisos gradlew
+        run: chmod +x gradlew
+
+      # ── Verificar que el código Kotlin compila ──
+      - name: 🔧 Compilar Kotlin (sin NDK)
+        run: ./gradlew compileDebugKotlin --stacktrace
+
+      # ── Lint en los archivos modificados ──
+      - name: 🔍 Lint
+        run: ./gradlew lintDebug
+
+      # ── Tests unitarios sin instrumentación ──
+      - name: 🧪 Tests unitarios
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      # ── Verificar que los recursos XML son válidos ──
+      - name: 📄 Verificar recursos Android
+        run: ./gradlew processDebugResources --stacktrace
+
+      - name: 📤 Artefactos de validación
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-validation-${{ github.event.pull_request.number }}
+          path: |
+            app/build/reports/lint-results-debug.html
+            app/build/reports/tests/testDebugUnitTest/
+          retention-days: 5
+
+      - name: 💬 Estado de la validación en PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { context, github } = require('@actions/github');
+            const status = '${{ job.status }}';
+            const icon = status === 'success' ? '✅' : '❌';
+            const msg = status === 'success'
+              ? '**Todos los checks pasaron.** El código está listo para review.'
+              : '**Algunos checks fallaron.** Revisa los logs del workflow.';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `${icon} **Jarvis CI — Validación PR**\n\n${msg}\n\n` +
+                    `[Ver detalles del workflow](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
+            });
