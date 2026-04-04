@@ -141,7 +141,7 @@ jobs:
 
       - name: 💬 Comentar Lint en PR
         if: github.event_name == 'pull_request' && always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
@@ -316,7 +316,7 @@ jobs:
 
       - name: 💬 Comentar APK en PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const apkSize = '${{ steps.apk-info.outputs.apk_size }}';
@@ -542,7 +542,7 @@ jobs:
 
     steps:
       - name: 📊 Escribir resumen en el Job Summary
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const lint      = '${{ needs.lint.result }}';
