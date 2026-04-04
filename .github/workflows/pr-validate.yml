@@ -42,7 +42,7 @@ jobs:
           cache: 'gradle'
 
       - name: 📱 Android SDK (sin NDK para velocidad)
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: 🔧 Instalar solo NDK (sin compilar C++ aún)
         run: |
