@@ -86,7 +86,7 @@ jobs:
           cache: 'gradle'
 
       - name: 📱 Android SDK + NDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: 🔧 NDK + CMake
         run: |

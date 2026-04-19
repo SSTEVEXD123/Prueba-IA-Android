@@ -79,7 +79,7 @@ jobs:
           cache: 'gradle'
 
       - name: 📱 Configurar Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: 🔧 Instalar NDK y CMake
         run: |
@@ -176,7 +176,7 @@ jobs:
           cache: 'gradle'
 
       - name: 📱 Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: 🔧 NDK + CMake
         run: |
@@ -255,7 +255,7 @@ jobs:
           cache: 'gradle'
 
       - name: 📱 Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: 🔧 NDK + CMake
         run: |
@@ -367,7 +367,7 @@ jobs:
           cache: 'gradle'
 
       - name: 📱 Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: 🔧 NDK + CMake
         run: |
