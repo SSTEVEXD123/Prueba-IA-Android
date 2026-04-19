@@ -92,7 +92,7 @@ jobs:
 
       - name: 🦙 Cache llama.cpp
         id: cache-llamacpp
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: app/src/main/cpp/llama.cpp
           key: llamacpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
@@ -100,7 +100,7 @@ jobs:
 
       - name: 🎨 Cache stable-diffusion.cpp
         id: cache-sdcpp
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: app/src/main/cpp/stable-diffusion.cpp
           key: sdcpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
@@ -115,7 +115,7 @@ jobs:
           ANDROID_NDK_HOME: ${{ env.NDK_HOME }}
 
       - name: 🗃️ Cache Gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.gradle/caches
@@ -186,13 +186,13 @@ jobs:
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
 
       - name: 🦙 Restaurar llama.cpp del caché
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: app/src/main/cpp/llama.cpp
           key: llamacpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
 
       - name: 🎨 Restaurar stable-diffusion.cpp del caché
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: app/src/main/cpp/stable-diffusion.cpp
           key: sdcpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
@@ -204,7 +204,7 @@ jobs:
           fi
 
       - name: 🗃️ Cache Gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.gradle/caches
@@ -265,13 +265,13 @@ jobs:
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
 
       - name: 🦙 Restaurar llama.cpp del caché
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: app/src/main/cpp/llama.cpp
           key: llamacpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
 
       - name: 🎨 Restaurar stable-diffusion.cpp del caché
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: app/src/main/cpp/stable-diffusion.cpp
           key: sdcpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
@@ -283,7 +283,7 @@ jobs:
           fi
 
       - name: 🗃️ Cache Gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.gradle/caches
@@ -377,13 +377,13 @@ jobs:
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
 
       - name: 🦙 Restaurar llama.cpp del caché
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: app/src/main/cpp/llama.cpp
           key: llamacpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
 
       - name: 🎨 Restaurar stable-diffusion.cpp del caché
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: app/src/main/cpp/stable-diffusion.cpp
           key: sdcpp-${{ hashFiles('scripts/setup_llama_cpp.sh') }}-v2
@@ -395,7 +395,7 @@ jobs:
           fi
 
       - name: 🗃️ Cache Gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.gradle/caches
